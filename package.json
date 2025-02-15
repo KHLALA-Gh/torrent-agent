@@ -1,0 +1,20 @@
+{
+  "name": "torrent-agent",
+  "version": "0.0.0",
+  "description": "NPM library for searching torrents.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@types/node": "^22.13.4",
+    "p-queue": "^8.1.0"
+  }
+}
