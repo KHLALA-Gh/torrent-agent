@@ -2,10 +2,11 @@ export interface ScraperOpts {}
 
 export interface Torrent {
   name: string;
-  link: string;
+  url: string;
   infoHash: string;
-  peers: string;
-  seeds: string;
+  peers: number;
+  seeds: number;
+  provider: string;
 }
 
 export interface TorrentLink {
@@ -17,4 +18,44 @@ export abstract class Scraper {
   constructor(opts: ScraperOpts) {}
   abstract firstTouch(): Promise<TorrentLink[]>;
   abstract scrapeTorrent(link: TorrentLink): Promise<Torrent>;
+}
+
+interface TestScraperOpts {
+  linksCount: number;
+  runTime: number;
+  ErrorInFirstTouch: Error;
+  ErrorInScrapeTorrent: Error;
+  name: string;
+}
+
+export class TestScraper extends Scraper {
+  linkCount: number;
+  runTime: number;
+  name: string;
+  constructor(opts: ScraperOpts & Partial<TestScraperOpts>) {
+    super({});
+    this.linkCount = opts.linksCount || 0;
+    this.runTime = opts.runTime || 0;
+    this.name = opts.name || "Test Scraper";
+  }
+  async firstTouch(): Promise<TorrentLink[]> {
+    let links: TorrentLink[] = [];
+    for (let i = 0; i < this.linkCount; i++) {
+      links.push({ provider: this.name, url: `url_${i}` });
+    }
+    await new Promise((res) => setTimeout(res, this.runTime));
+    return links;
+  }
+  async scrapeTorrent(link: TorrentLink): Promise<Torrent> {
+    await new Promise((res) => setTimeout(res, this.runTime));
+
+    return {
+      name: "Test torrent",
+      url: link.url,
+      infoHash: "94d98a8c1s6q4d8zad45sq6dsq58",
+      peers: 50,
+      seeds: 60,
+      provider: this.name,
+    };
+  }
 }
