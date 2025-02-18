@@ -32,13 +32,20 @@ export class TestScraper extends Scraper {
   linkCount: number;
   runTime: number;
   name: string;
+  ErrorInFirstTouch?: Error;
+  ErrorInScrapeTorrent?: Error;
   constructor(opts: ScraperOpts & Partial<TestScraperOpts>) {
     super({});
     this.linkCount = opts.linksCount || 0;
     this.runTime = opts.runTime || 0;
     this.name = opts.name || "Test Scraper";
+    this.ErrorInFirstTouch = opts.ErrorInFirstTouch;
+    this.ErrorInScrapeTorrent = opts.ErrorInScrapeTorrent;
   }
   async firstTouch(): Promise<TorrentLink[]> {
+    if (this.ErrorInFirstTouch) {
+      throw this.ErrorInFirstTouch;
+    }
     let links: TorrentLink[] = [];
     for (let i = 0; i < this.linkCount; i++) {
       links.push({ provider: this.name, url: `url_${i}` });
@@ -47,6 +54,9 @@ export class TestScraper extends Scraper {
     return links;
   }
   async scrapeTorrent(link: TorrentLink): Promise<Torrent> {
+    if (this.ErrorInScrapeTorrent) {
+      throw this.ErrorInScrapeTorrent;
+    }
     await new Promise((res) => setTimeout(res, this.runTime));
 
     return {

@@ -30,6 +30,7 @@ export default class TorrentAgent extends EventEmitter<AgentEvents> {
     const query = new Query(opts.searchQuery, opts.scrapers, opts.options);
     this.queue.add(async () => {
       await query.run();
+      await query.destroy();
     });
     this.emit("query", query);
     return query;
