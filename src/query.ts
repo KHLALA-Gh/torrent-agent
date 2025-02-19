@@ -18,6 +18,8 @@ interface QueryEvents {
 
 export interface QueryOpts {
   concurrency: number;
+  /** Max torrents per scraper. */
+  limit: number;
 }
 
 export const QueueDestroyedErr = new QueryError(
@@ -33,6 +35,7 @@ export default class Query extends EventEmitter<QueryEvents> {
   protected searchQuery: string;
   protected queue: PQueue | null;
   protected isDestroyed: boolean;
+  limit?: number;
   constructor(
     searchQuery: string,
     scrapers: Scraper[],
@@ -42,6 +45,7 @@ export default class Query extends EventEmitter<QueryEvents> {
     this.searchQuery = searchQuery;
     this.scrapers = scrapers;
     this.isDestroyed = false;
+    this.limit = opts.limit;
     this.queue = new PQueue({
       concurrency: opts.concurrency || 5,
     });
@@ -74,14 +78,14 @@ export default class Query extends EventEmitter<QueryEvents> {
         return;
       }
       if (!links) return;
-      for (let link of links) {
+      for (let i = 0; i < (this.limit || links.length); i++) {
         if (!this.queue) {
           this.emit("error", QueueDestroyedErr);
           throw QueueDestroyedErr;
         }
         this.queue.add(async () => {
           try {
-            let torrent = await scraper.scrapeTorrent(link);
+            let torrent = await scraper.scrapeTorrent(links[i]);
             this.emit("torrent", torrent);
           } catch (err: any) {
             this.emit(

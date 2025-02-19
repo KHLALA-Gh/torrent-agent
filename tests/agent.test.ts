@@ -43,13 +43,49 @@ describe("TorrentAgent", () => {
       queries.push(q);
     }
 
-    await Promise.all(
-      queries.map((q) => new Promise<void>((resolve) => q.on("done", resolve)))
-    );
+    await agent.onIdle();
 
     expect(torrentsCount).toBe(
       loopCount * linksCount + loopCount * linksCount1
     );
     expect(queryCount).toBe(loopCount);
+  });
+  it("should get destroyed correctly", async () => {
+    const agent = new TorrentAgent();
+    let isDestroyed = false;
+    agent.on("destroyed", () => (isDestroyed = true));
+    await agent.destroy();
+    expect(isDestroyed).toBe(true);
+    expect(() => {
+      agent.add({ searchQuery: "test", scrapers: [new TestScraper({})] });
+    }).toThrow();
+  });
+  it("should stop all queries when it gets destroyed", async () => {
+    let QueriesConcurrency = 5;
+    const agent = new TorrentAgent({ QueriesConcurrency });
+
+    let queryCount = 0;
+    let durationToDestroy = 100;
+    let runTime = 10;
+    agent.on("query_done", () => queryCount++);
+
+    setTimeout(async () => {
+      await agent.destroy();
+    }, durationToDestroy);
+    for (let i = 0; i < 50; i++) {
+      agent.add({
+        searchQuery: "Test",
+        scrapers: [new TestScraper({ runTime })],
+      });
+    }
+    await agent.onIdle();
+    // Assuming that the agent will not complete all his queries.
+    // The agent will start queries at t = 0s. After Δt = durationToDestroy it will be destroyed.
+    // every query take Δtr = runTime to finish and the agent can run n = QueriesConcurrency
+    // concurrently. so the queries that are executed should respect this equation
+    // queryCount = n * (Δt / Δtr)
+    expect(queryCount).toBe(
+      Math.floor(QueriesConcurrency * (durationToDestroy / runTime))
+    );
   });
 });

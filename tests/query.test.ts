@@ -13,6 +13,16 @@ describe("Test Query", () => {
     await query.run();
     expect(tCount).toBe(linksCount1 + linksCount2);
   });
+  it("should not exceed the limit", async () => {
+    let linksCount1 = 50;
+    let limit = 10;
+    let scraper1 = new TestScraper({ linksCount: linksCount1 });
+    let query = new Query("Test", [scraper1], { concurrency: 5, limit });
+    let tCount = 0;
+    query.on("torrent", () => tCount++);
+    await query.run();
+    expect(tCount).toBe(limit);
+  });
   it("should handle errors correctly", async () => {
     let linksCount1 = 50;
     let linksCount2 = 10;
