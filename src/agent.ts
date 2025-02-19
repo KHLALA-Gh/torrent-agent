@@ -5,7 +5,7 @@ import { Scraper } from "./scrapers/scraper";
 
 interface AgentOpts {
   /**
-   * Max queries that run in the same time.
+   * Max queries that run at the same time.
    */
   maxQueries: number;
 }

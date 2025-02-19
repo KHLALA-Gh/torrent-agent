@@ -24,10 +24,15 @@ export const QueueDestroyedErr = new QueryError(
   "The queue is destroyed cannot run the query.\nThis error may be caused because the query is already destroyed."
 );
 
+export const QueryDestroyed = new QueryError(
+  "The query is destroyed cannot run the query."
+);
+
 export default class Query extends EventEmitter<QueryEvents> {
   protected scrapers: Scraper[];
   protected searchQuery: string;
   protected queue: PQueue | null;
+  protected isDestroyed: boolean;
   constructor(
     searchQuery: string,
     scrapers: Scraper[],
@@ -36,6 +41,7 @@ export default class Query extends EventEmitter<QueryEvents> {
     super();
     this.searchQuery = searchQuery;
     this.scrapers = scrapers;
+    this.isDestroyed = false;
     this.queue = new PQueue({
       concurrency: opts.concurrency || 5,
     });
@@ -92,11 +98,13 @@ export default class Query extends EventEmitter<QueryEvents> {
     });
   }
   async run() {
+    if (this.isDestroyed) {
+      throw QueryDestroyed;
+    }
     if (!this.queue) {
       this.emit("error", QueueDestroyedErr);
       throw QueueDestroyedErr;
     }
-    await this.queue.onIdle();
     for (let scraper of this.scrapers) {
       this.getTorrents(scraper);
     }
@@ -105,9 +113,12 @@ export default class Query extends EventEmitter<QueryEvents> {
   }
 
   async destroy() {
+    if (this.isDestroyed) return;
+    this.isDestroyed = true;
     if (this.queue) {
-      await this.queue.onIdle();
+      this.queue.pause();
       this.queue.clear();
+      await this.queue.onIdle();
       this.queue = null;
     }
     this.emit("destroyed");
