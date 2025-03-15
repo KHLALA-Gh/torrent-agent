@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
-import { Scraper, Torrent, TorrentLink } from "./scrapers/scraper";
+import { Scraper, Torrent, TorrentLink } from "./scrapers/scraper.js";
 import PQueue from "p-queue";
+import { Scraper1337x } from "./scrapers/1337x.js";
 
 export class QueryError extends Error {
   constructor(msg: string) {
@@ -8,6 +9,8 @@ export class QueryError extends Error {
     this.message = msg;
   }
 }
+
+export const DefaultScrapers: Scraper[] = [new Scraper1337x()];
 
 interface QueryEvents {
   error: [error: QueryError];
@@ -38,12 +41,12 @@ export default class Query extends EventEmitter<QueryEvents> {
   limit?: number;
   constructor(
     searchQuery: string,
-    scrapers: Scraper[],
+    scrapers?: Scraper[],
     opts: Partial<QueryOpts> = {}
   ) {
     super();
     this.searchQuery = searchQuery;
-    this.scrapers = scrapers;
+    this.scrapers = scrapers || DefaultScrapers;
     this.isDestroyed = false;
     this.limit = opts.limit;
     this.queue = new PQueue({
@@ -53,7 +56,7 @@ export default class Query extends EventEmitter<QueryEvents> {
     if (!searchQuery) {
       throw new QueryError("search query is required");
     }
-    if (!scrapers.length) {
+    if (scrapers && !scrapers.length) {
       throw new QueryError("no scrapers are set");
     }
   }
@@ -65,7 +68,7 @@ export default class Query extends EventEmitter<QueryEvents> {
     await this.queue.add(async () => {
       let links: TorrentLink[];
       try {
-        links = await scraper.firstTouch();
+        links = await scraper.firstTouch(this.searchQuery);
       } catch (err: any) {
         this.emit(
           "error",
@@ -78,7 +81,16 @@ export default class Query extends EventEmitter<QueryEvents> {
         return;
       }
       if (!links) return;
-      for (let i = 0; i < (this.limit || links.length); i++) {
+      for (
+        let i = 0;
+        i <
+        (this.limit
+          ? this.limit > links.length
+            ? links.length
+            : this.limit
+          : links.length);
+        i++
+      ) {
         if (!this.queue) {
           this.emit("error", QueueDestroyedErr);
           throw QueueDestroyedErr;

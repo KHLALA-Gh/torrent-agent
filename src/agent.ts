@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
-import Query, { QueryOpts } from "./query";
+import Query, { QueryOpts } from "./query.js";
 import PQueue from "p-queue";
-import { Scraper } from "./scrapers/scraper";
+import { Scraper } from "./scrapers/scraper.js";
 
 interface AgentOpts {
   /**
@@ -34,7 +34,7 @@ export default class TorrentAgent extends EventEmitter<AgentEvents> {
   constructor(opts: Partial<AgentOpts> = {}) {
     super();
     this.queue = new PQueue({
-      concurrency: opts.QueriesConcurrency || Infinity,
+      concurrency: opts.QueriesConcurrency || 5,
     });
     this.isDestroyed = false;
   }

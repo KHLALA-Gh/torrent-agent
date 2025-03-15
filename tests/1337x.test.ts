@@ -4,7 +4,7 @@ import { Scraper1337x } from "../src/scrapers/1337x";
 import { TorrentLink } from "../src/scrapers/scraper";
 
 describe("Test the 1337x scraper", () => {
-  nock.disableNetConnect(); // Block real requests
+  nock.disableNetConnect();
   nock("https://1337x.to")
     .get("/search/ubuntu/1/")
     .reply(
@@ -15,7 +15,7 @@ describe("Test the 1337x scraper", () => {
             <tr>
               <td class="name">
                 <a>Icon</a>
-                <a href="/torrent/123456/ubuntu-22-04">Ubuntu 22.04</a>
+                <a href="/torrent/123456/ubuntu-22-04/">Ubuntu 22.04</a>
               </td>
               <td class="coll-2 seeds">81</td>
               <td class="coll-3 leeches">3</td>
@@ -37,9 +37,8 @@ describe("Test the 1337x scraper", () => {
       `
     );
   it("should scrape the search page and return torrent links", async () => {
-    const scraper = new Scraper1337x({ query: "ubuntu" });
-    let result = await scraper.firstTouch();
-    console.log(result);
+    const scraper = new Scraper1337x();
+    let result = await scraper.firstTouch("ubuntu");
     expect(result).toStrictEqual([
       {
         name: "Ubuntu 22.04",
@@ -53,7 +52,7 @@ describe("Test the 1337x scraper", () => {
     ] as TorrentLink[]);
   });
   it("should scrape the torrent page and return the info hash", async () => {
-    const scraper = new Scraper1337x({ query: "Ubuntu" });
+    const scraper = new Scraper1337x();
     let result = await scraper.scrapeTorrent({
       name: "Ubuntu Linux Administration: Essential Commands",
       url: "https://1337x.to/torrent/123456/ubuntu-22-04/",
@@ -63,7 +62,6 @@ describe("Test the 1337x scraper", () => {
       size: "15",
       uploader: "uploader",
     });
-    console.log(result);
     expect(result).toStrictEqual({
       magnetURI: "magnet:?xt=urn:btih:abcdef1234567890",
       infoHash: "ABCDEF1234567890",
@@ -76,5 +74,26 @@ describe("Test the 1337x scraper", () => {
       size: "15",
       uploader: "uploader",
     });
+  });
+  it("should throw an error if the search query is not defined or empty", () => {
+    let scraper = new Scraper1337x();
+    expect(async () => {
+      await scraper.firstTouch("");
+    }).rejects.toThrow(Error);
+  });
+  it("scrape torrent page should return an error if the url is empty", async () => {
+    const scraper = new Scraper1337x({ query: "Ubuntu" });
+
+    expect(async () => {
+      await scraper.scrapeTorrent({
+        name: "Ubuntu Linux Administration: Essential Commands",
+        url: "",
+        seeders: 29,
+        leechers: 3,
+        provider: "1337x",
+        size: "15",
+        uploader: "uploader",
+      });
+    }).rejects.toThrow(Error);
   });
 });

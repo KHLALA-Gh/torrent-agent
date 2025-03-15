@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Scraper, ScraperOpts, Torrent, TorrentLink } from "./scraper";
+import { Scraper, ScraperOpts, Torrent, TorrentLink } from "./scraper.js";
 import { load } from "cheerio";
 
 export class Scraper1337x extends Scraper {
@@ -7,9 +7,12 @@ export class Scraper1337x extends Scraper {
   constructor(opts: ScraperOpts = {}) {
     super(opts);
   }
-  async firstTouch(): Promise<TorrentLink[]> {
+  async firstTouch(query: string): Promise<TorrentLink[]> {
+    if (!query) {
+      throw new Error("search query is required to scrape");
+    }
     const { data } = await axios.get(
-      Scraper1337x.firstTouchUrl.replace(":query", this.opts.query || "")
+      Scraper1337x.firstTouchUrl.replace(":query", query || "")
     );
 
     const $ = load(data);
@@ -18,7 +21,7 @@ export class Scraper1337x extends Scraper {
     $(".table-list tbody tr").each((i, el) => {
       const name = $(el).find("td.name a").eq(1).text().trim();
       const url =
-        "https://1337x.to" + $(el).find("td.name a").eq(1).attr("href") + "/";
+        "https://1337x.to" + $(el).find("td.name a").eq(1).attr("href");
       const seeders = $(el).find("td.seeds").text().trim();
       const size = $(el).find("td.size").text().trim();
       const uploader = $(el).find("td.user").text().trim();
@@ -36,6 +39,9 @@ export class Scraper1337x extends Scraper {
     return results;
   }
   async scrapeTorrent(link: TorrentLink): Promise<Torrent> {
+    if (!link.url) {
+      throw new Error("url is required in the torrent link");
+    }
     const { data } = await axios.get(link.url);
 
     const $ = load(data);

@@ -1,6 +1,4 @@
-export interface ScraperOpts {
-  query?: string;
-}
+export interface ScraperOpts {}
 
 export interface Torrent {
   name: string;
@@ -30,7 +28,7 @@ export abstract class Scraper {
   constructor(opts: ScraperOpts = {}) {
     this.opts = opts;
   }
-  abstract firstTouch(): Promise<TorrentLink[]>;
+  abstract firstTouch(query: string): Promise<TorrentLink[]>;
   abstract scrapeTorrent(link: TorrentLink): Promise<Torrent>;
 }
 
@@ -56,7 +54,7 @@ export class TestScraper extends Scraper {
     this.ErrorInFirstTouch = opts.ErrorInFirstTouch;
     this.ErrorInScrapeTorrent = opts.ErrorInScrapeTorrent;
   }
-  async firstTouch(): Promise<TorrentLink[]> {
+  async firstTouch(query: string): Promise<TorrentLink[]> {
     if (this.ErrorInFirstTouch) {
       throw this.ErrorInFirstTouch;
     }
