@@ -1,3 +1,3 @@
-import TorrentAgent from "./agent";
+import TorrentAgent from "./agent.js";
 
 export default TorrentAgent;
