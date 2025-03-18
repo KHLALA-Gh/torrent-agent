@@ -28,7 +28,7 @@ export abstract class Scraper {
   constructor(opts: ScraperOpts = {}) {
     this.opts = opts;
   }
-  abstract firstTouch(query: string): Promise<TorrentLink[]>;
+  abstract firstTouch(query: string, limit?: number): Promise<TorrentLink[]>;
   abstract scrapeTorrent(link: TorrentLink): Promise<Torrent>;
 }
 
@@ -54,12 +54,14 @@ export class TestScraper extends Scraper {
     this.ErrorInFirstTouch = opts.ErrorInFirstTouch;
     this.ErrorInScrapeTorrent = opts.ErrorInScrapeTorrent;
   }
-  async firstTouch(query: string): Promise<TorrentLink[]> {
+  async firstTouch(query: string, limit?: number): Promise<TorrentLink[]> {
     if (this.ErrorInFirstTouch) {
       throw this.ErrorInFirstTouch;
     }
     let links: TorrentLink[] = [];
-    for (let i = 0; i < this.linkCount; i++) {
+    let linksNum =
+      this.linkCount > (limit || 20) ? limit || 20 : this.linkCount;
+    for (let i = 0; i < linksNum; i++) {
       //@ts-ignore
       links.push({ provider: this.name, url: `url_${i}` });
     }

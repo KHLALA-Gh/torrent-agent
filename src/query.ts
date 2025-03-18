@@ -68,7 +68,7 @@ export default class Query extends EventEmitter<QueryEvents> {
     await this.queue.add(async () => {
       let links: TorrentLink[];
       try {
-        links = await scraper.firstTouch(this.searchQuery);
+        links = await scraper.firstTouch(this.searchQuery, this.limit);
       } catch (err: any) {
         this.emit(
           "error",
@@ -81,16 +81,7 @@ export default class Query extends EventEmitter<QueryEvents> {
         return;
       }
       if (!links) return;
-      for (
-        let i = 0;
-        i <
-        (this.limit
-          ? this.limit > links.length
-            ? links.length
-            : this.limit
-          : links.length);
-        i++
-      ) {
+      for (let i = 0; i < links.length; i++) {
         if (!this.queue) {
           this.emit("error", QueueDestroyedErr);
           throw QueueDestroyedErr;

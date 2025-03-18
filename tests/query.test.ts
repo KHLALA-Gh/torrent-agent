@@ -7,7 +7,10 @@ describe("Test Query", () => {
     let linksCount2 = 15;
     let scraper1 = new TestScraper({ linksCount: linksCount1, runTime: 50 });
     let scraper2 = new TestScraper({ linksCount: linksCount2, runTime: 20 });
-    let query = new Query("Test", [scraper1, scraper2], { concurrency: 5 });
+    let query = new Query("Test", [scraper1, scraper2], {
+      concurrency: 5,
+      limit: 100,
+    });
     let tCount = 0;
     query.on("torrent", () => tCount++);
     await query.run();
@@ -38,6 +41,7 @@ describe("Test Query", () => {
     });
     let query = new Query("Test", [scraper1, scraper2, scraper3], {
       concurrency: 5,
+      limit: 100,
     });
     let tCount = 0;
     let errorCount = 0;
@@ -56,7 +60,10 @@ describe("Test Query", () => {
     let linksCount2 = 15;
     let scraper1 = new TestScraper({ linksCount: linksCount1 });
     let scraper2 = new TestScraper({ linksCount: linksCount2 });
-    let query = new Query("Test", [scraper1, scraper2], { concurrency: 5 });
+    let query = new Query("Test", [scraper1, scraper2], {
+      concurrency: 5,
+      limit: 100,
+    });
     let tCount = 0;
     query.on("torrent", () => tCount++);
     let queryRunCount = 10;
@@ -72,7 +79,10 @@ describe("Test Query", () => {
     let linksCount2 = 15;
     let scraper1 = new TestScraper({ linksCount: linksCount1 });
     let scraper2 = new TestScraper({ linksCount: linksCount2 });
-    let query = new Query("Test", [scraper1, scraper2], { concurrency: 5 });
+    let query = new Query("Test", [scraper1, scraper2], {
+      concurrency: 5,
+      limit: 100,
+    });
     let tCount = 0;
     let destroyed = false;
     query.on("destroyed", () => {
@@ -91,7 +101,7 @@ describe("Test Query", () => {
     let linksCount1 = 50;
     let scraper1 = new TestScraper({ linksCount: linksCount1, runTime: 50 });
     let concurrency = 10;
-    let query = new Query("Test", [scraper1], { concurrency });
+    let query = new Query("Test", [scraper1], { concurrency, limit: 100 });
     // destroy the query after 100ms.
     setTimeout(async () => {
       await query.destroy();
@@ -106,8 +116,11 @@ describe("Test Query", () => {
     // will be the same as concurrency (batch size).
     expect(tCount).toBe(concurrency);
 
-    let scraper2 = new TestScraper({ linksCount: linksCount1, runTime: 25 });
-    let query1 = new Query("Test", [scraper2], { concurrency });
+    let scraper2 = new TestScraper({
+      linksCount: linksCount1,
+      runTime: 25,
+    });
+    let query1 = new Query("Test", [scraper2], { concurrency, limit: 100 });
     setTimeout(async () => {
       await query1.destroy();
     }, 100);

@@ -45,3 +45,43 @@ q.on("done", () => {
   console.log("done");
 });
 ```
+
+#### Default scrapers :
+
+- 1337x.to
+
+> More scrapers will be available soon
+
+#### Custom scrapers
+
+You can create your own custom scrapers that scrape from any site.
+The custom scraper need to extend from the scraper abstract class.
+
+```js
+class CustomScraper extends Scraper {
+  constructor(opts: ScraperOpts) {
+    super(opts);
+  }
+  async firstTouch(query: string, limit?: number): Promise<TorrentLink[]> {
+    // search page scraping logic
+  }
+  async scrapeTorrent(link: TorrentLink): Promise<Torrent> {
+    // torrent page scraping logic
+  }
+}
+
+// then create the agent
+const agent = new TorrentAgent();
+// use your custom scraper in your query
+let query = agent.add({
+  searchQuery: "Ubuntu",
+  options: {
+    limit: 20,
+    concurrency: 10,
+  },
+  scrapers: [new CustomScraper()],
+});
+query.on("torrent", (t) => {
+  console.log(t);
+});
+```
