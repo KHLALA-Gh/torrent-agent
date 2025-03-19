@@ -7,12 +7,8 @@ Torrent Agent is an npm library for searching torrents from torrent sites like 1
 
 ## How to use it
 
-Torrent agent is still in development and it's not actually available in npm, but you can clone it
-manually.
-
 ```shell
-$ npm i
-$ tsc
+$ npm i torrent-agent
 ```
 
 create a js file and import the library.
@@ -20,28 +16,28 @@ create a js file and import the library.
 example :
 
 ```js
-import TorrentAgent from "./dist/index.js";
+import TorrentAgent from "torrent-agent";
 
 const agent = new TorrentAgent();
 
-let q = agent.add({
+let query = agent.add({
   searchQuery: "Ubuntu",
   options: {
     limit: 20,
-    concurrency: 10,
+    concurrency: 5,
   },
 });
 
 // Listen for torrents
-q.on("torrent", (t) => {
-  console.log(t);
+query.on("torrent", (torrent) => {
+  console.log(torrent);
 });
 // Listen for errors
-q.on("error", (e) => {
+query.on("error", (e) => {
   console.log(e);
 });
 // Listen for query completion
-q.on("done", () => {
+query.on("done", () => {
   console.log("done");
 });
 ```

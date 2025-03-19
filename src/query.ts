@@ -99,6 +99,7 @@ export default class Query extends EventEmitter<QueryEvents> {
                 }`
               )
             );
+            return;
           }
         });
       }
