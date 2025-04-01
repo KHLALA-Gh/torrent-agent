@@ -18,7 +18,7 @@ interface AgentEvents {
 
 interface AddQueryOpts {
   searchQuery: string;
-  scrapers: Scraper[];
+  scrapers?: Scraper[];
   options?: QueryOpts;
 }
 
