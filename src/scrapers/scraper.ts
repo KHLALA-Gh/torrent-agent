@@ -10,7 +10,7 @@ export interface Torrent {
   magnetURI?: string;
   torrentDownload?: string;
   size: string;
-  uploader: string;
+  uploader?: string;
 }
 
 export interface TorrentLink {
@@ -20,7 +20,7 @@ export interface TorrentLink {
   provider: string;
   url: string;
   size: string;
-  uploader: string;
+  uploader?: string;
 }
 
 export abstract class Scraper {

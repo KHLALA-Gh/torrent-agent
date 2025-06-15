@@ -1,17 +1,24 @@
 {
   "name": "torrent-agent",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "NPM library for searching torrents.",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
-    "build" :"tsc"
+    "build": "tsc"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "torrent",
+    "torrent search"
+  ],
+  "author": "khlala",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.4",
@@ -24,5 +31,12 @@
     "axios": "^1.8.3",
     "cheerio": "^1.0.0",
     "p-queue": "^8.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KHLALA-Gh/torrent-agent/"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
