@@ -16,11 +16,6 @@ export class TorrentGalaxy extends Scraper {
     let results: TorrentLink[] = [];
     let page = 1;
     while (results.length != (limit || 20)) {
-      console.log(
-        TorrentGalaxy.firstTouchUrl
-          .replace(":query", query || "")
-          .replace(":page", page.toString())
-      );
       const { data } = await axios.get(
         TorrentGalaxy.firstTouchUrl
           .replace(":query", query || "")
@@ -53,7 +48,6 @@ export class TorrentGalaxy extends Scraper {
       });
       page++;
     }
-    console.log(results);
     return results;
   }
   async scrapeTorrent(link: TorrentLink): Promise<Torrent> {

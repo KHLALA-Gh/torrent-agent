@@ -44,7 +44,7 @@ query.on("done", () => {
 
 #### Default scrapers :
 
-- 1337x.to
+- Torrent Galaxy
 
 > More scrapers will be available soon
 

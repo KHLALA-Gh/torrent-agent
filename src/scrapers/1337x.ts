@@ -2,6 +2,9 @@ import axios from "axios";
 import { Scraper, ScraperOpts, Torrent, TorrentLink } from "./scraper.js";
 import { load } from "cheerio";
 
+/**
+ *  @deprecated not working anymore because of cloudflare.
+ */
 export class Scraper1337x extends Scraper {
   static firstTouchUrl = "https://1337x.to/search/:query/:page/";
   constructor(opts: ScraperOpts = {}) {

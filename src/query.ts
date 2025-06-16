@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { Scraper, Torrent, TorrentLink } from "./scrapers/scraper.js";
 import PQueue from "p-queue";
-import { Scraper1337x } from "./scrapers/1337x.js";
+import { TorrentGalaxy } from "./scrapers/torrentGalaxy.js";
 
 export class QueryError extends Error {
   constructor(msg: string) {
@@ -10,7 +10,7 @@ export class QueryError extends Error {
   }
 }
 
-export const DefaultScrapers: Scraper[] = [new Scraper1337x()];
+export const DefaultScrapers: Scraper[] = [new TorrentGalaxy()];
 
 interface QueryEvents {
   error: [error: QueryError];
