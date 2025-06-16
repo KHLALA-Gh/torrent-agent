@@ -1,6 +1,6 @@
 {
   "name": "torrent-agent",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "NPM library for searching torrents.",
   "type": "module",
   "main": "dist/index.js",
