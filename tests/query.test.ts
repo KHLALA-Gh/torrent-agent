@@ -52,7 +52,7 @@ describe("Test Query", () => {
     // Check the number of expected errors
     // Scraper2 will emit one error because the error is thrown from the firstTouch funcion
     // while Scraper3 will emit n = linksCount2 errors because errors are thrown from the scrape
-    // functions wich are called from a for loop that loop through all links and call scrapTorrent.
+    // functions which are called from a for loop that loop through all links and call scrapTorrent.
     expect(errorCount).toBe(linksCount2 + 1);
   });
   it("should be able to run() multiple times", async () => {

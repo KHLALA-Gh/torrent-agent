@@ -2,6 +2,9 @@ import { EventEmitter } from "events";
 import { Scraper, Torrent, TorrentLink } from "./scrapers/scraper.js";
 import PQueue from "p-queue";
 import { TorrentGalaxy } from "./scrapers/torrentGalaxy.js";
+import { Browser } from "playwright";
+import { ThePirateBay } from "./scrapers/thepiratebay.js";
+import { Nyaa } from "./scrapers/nyaa.js";
 
 export class QueryError extends Error {
   constructor(msg: string) {
@@ -10,7 +13,8 @@ export class QueryError extends Error {
   }
 }
 
-export const DefaultScrapers: Scraper[] = [new TorrentGalaxy()];
+export const DefaultScrapers: Scraper[] = [new TorrentGalaxy(), new Nyaa()];
+export const ChromiumScrapers: Scraper[] = [new ThePirateBay()];
 
 interface QueryEvents {
   error: [error: QueryError];
@@ -23,6 +27,8 @@ export interface QueryOpts {
   concurrency: number;
   /** Max torrents per scraper. */
   limit: number;
+  browser?: Browser;
+  useChromiumScrapers?: boolean;
 }
 
 export const QueueDestroyedErr = new QueryError(
@@ -46,7 +52,21 @@ export default class Query extends EventEmitter<QueryEvents> {
   ) {
     super();
     this.searchQuery = searchQuery;
-    this.scrapers = scrapers || DefaultScrapers;
+    if (scrapers) {
+      scrapers.forEach((s) => {
+        s.browser = opts.browser;
+      });
+      this.scrapers = scrapers;
+    } else {
+      this.scrapers = DefaultScrapers;
+      if (opts.useChromiumScrapers && opts.browser) {
+        ChromiumScrapers.forEach((s) => {
+          s.browser = opts.browser;
+        });
+        this.scrapers = [...this.scrapers, ...ChromiumScrapers];
+      }
+    }
+
     this.isDestroyed = false;
     this.limit = opts.limit;
     this.queue = new PQueue({

@@ -1,28 +1,40 @@
 import axios from "axios";
 import { Scraper, ScraperOpts, Torrent, TorrentLink } from "./scraper.js";
 import { load } from "cheerio";
+import { Browser } from "playwright";
 
 /**
  *  @deprecated not working anymore because of cloudflare.
  */
 export class Scraper1337x extends Scraper {
   static firstTouchUrl = "https://1337x.to/search/:query/:page/";
+  browser?: Browser | undefined;
   constructor(opts: ScraperOpts = {}) {
     super(opts);
+    this.browser = opts.browser;
   }
+
   async firstTouch(query: string, limit?: number): Promise<TorrentLink[]> {
     if (!query) {
       throw new Error("search query is required to scrape");
     }
+    if (!this.browser) throw new Error("browser is not created");
 
     let results: TorrentLink[] = [];
-    let page = 1;
+    let p = 1;
     while (results.length != (limit || 20)) {
-      const { data } = await axios.get(
+      const page = await this.browser.newPage();
+
+      await page.goto(
         Scraper1337x.firstTouchUrl
           .replace(":query", query || "")
-          .replace(":page", page.toString())
+          .replace(":page", page.toString()),
+        {
+          waitUntil: "networkidle",
+        }
       );
+
+      const data = await page.content();
 
       const $ = load(data);
       let torrentCount = $(".table-list tbody tr").length;
@@ -48,7 +60,7 @@ export class Scraper1337x extends Scraper {
           uploader,
         });
       });
-      page++;
+      p++;
     }
     return results;
   }

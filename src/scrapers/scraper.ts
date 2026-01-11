@@ -1,4 +1,9 @@
-export interface ScraperOpts {}
+import { Browser } from "playwright";
+
+export interface ScraperOpts {
+  browser?: Browser;
+  query?: string;
+}
 
 export interface Torrent {
   name: string;
@@ -21,10 +26,13 @@ export interface TorrentLink {
   url: string;
   size: string;
   uploader?: string;
+  infoHash?: string;
+  magnetURI?: string;
 }
 
 export abstract class Scraper {
   protected opts: ScraperOpts;
+  browser?: Browser;
   constructor(opts: ScraperOpts = {}) {
     this.opts = opts;
   }
