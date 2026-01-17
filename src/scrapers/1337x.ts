@@ -1,14 +1,9 @@
 import axios from "axios";
 import { Scraper, ScraperOpts, Torrent, TorrentLink } from "./scraper.js";
 import { load } from "cheerio";
-import { Browser } from "playwright";
 
-/**
- *  @deprecated not working anymore because of cloudflare.
- */
 export class Scraper1337x extends Scraper {
-  static firstTouchUrl = "https://1337x.to/search/:query/:page/";
-  browser?: Browser | undefined;
+  static firstTouchUrl = "https://1337x.pro/search";
   constructor(opts: ScraperOpts = {}) {
     super(opts);
     this.browser = opts.browser;
@@ -18,23 +13,15 @@ export class Scraper1337x extends Scraper {
     if (!query) {
       throw new Error("search query is required to scrape");
     }
-    if (!this.browser) throw new Error("browser is not created");
 
     let results: TorrentLink[] = [];
     let p = 1;
+
     while (results.length != (limit || 20)) {
-      const page = await this.browser.newPage();
-
-      await page.goto(
-        Scraper1337x.firstTouchUrl
-          .replace(":query", query || "")
-          .replace(":page", page.toString()),
-        {
-          waitUntil: "networkidle",
-        }
-      );
-
-      const data = await page.content();
+      const url = new URL(Scraper1337x.firstTouchUrl);
+      url.searchParams.set("q", query);
+      url.searchParams.set("page", p.toString());
+      const { data } = await axios.get(url.href);
 
       const $ = load(data);
       let torrentCount = $(".table-list tbody tr").length;
@@ -44,15 +31,16 @@ export class Scraper1337x extends Scraper {
       $(".table-list tbody tr").each((i, el) => {
         if (results.length >= (limit || 20)) return;
         const name = $(el).find("td.name a").eq(1).text().trim();
-        const url =
-          "https://1337x.to" + $(el).find("td.name a").eq(1).attr("href");
+        const urlPath = $(el).find("td.name a").eq(1).attr("href");
+        if (!urlPath) return;
+        const url = new URL(urlPath, Scraper1337x.firstTouchUrl);
         const seeders = $(el).find("td.seeds").text().trim();
         const size = $(el).find("td.size").text().trim();
-        const uploader = $(el).find("td.user").text().trim();
+        const uploader = $(el).find("td").eq(5).text().trim();
         const leechers = $(el).find("td.leeches").text().trim();
         results.push({
           name,
-          url,
+          url: url.href,
           seeders: +seeders,
           leechers: +leechers,
           provider: "1337x",
@@ -72,10 +60,11 @@ export class Scraper1337x extends Scraper {
 
     const $ = load(data);
 
-    const magnetURI = $("a[href^='magnet:?']").attr("href");
-    const infoHash = $(".infohash-box span").text().trim();
-    const torrentDownload = $("a[href$='.torrent']").attr("href");
+    const text = $(".box-info").text().trim().replace(/\s+/g, " ");
+    const infoHashMatch = text.match(/info\s*hash\s*:\s*([a-fA-F0-9]+)/i);
+    if (!infoHashMatch || infoHashMatch?.length == 0)
+      throw Error("cant get info hash");
 
-    return { magnetURI, infoHash, torrentDownload, ...link };
+    return { infoHash: infoHashMatch[1], ...link };
   }
 }

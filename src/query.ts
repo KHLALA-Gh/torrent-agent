@@ -5,6 +5,7 @@ import { TorrentGalaxy } from "./scrapers/torrentGalaxy.js";
 import { Browser } from "playwright";
 import { ThePirateBay } from "./scrapers/thepiratebay.js";
 import { Nyaa } from "./scrapers/nyaa.js";
+import { Scraper1337x } from "./scrapers/1337x.js";
 
 export class QueryError extends Error {
   constructor(msg: string) {
@@ -13,7 +14,11 @@ export class QueryError extends Error {
   }
 }
 
-export const DefaultScrapers: Scraper[] = [new TorrentGalaxy(), new Nyaa()];
+export const DefaultScrapers: Scraper[] = [
+  new TorrentGalaxy(),
+  new Nyaa(),
+  new Scraper1337x(),
+];
 export const ChromiumScrapers: Scraper[] = [new ThePirateBay()];
 
 interface QueryEvents {
@@ -32,11 +37,11 @@ export interface QueryOpts {
 }
 
 export const QueueDestroyedErr = new QueryError(
-  "The queue is destroyed cannot run the query.\nThis error may be caused because the query is already destroyed."
+  "The queue is destroyed cannot run the query.\nThis error may be caused because the query is already destroyed.",
 );
 
 export const QueryDestroyed = new QueryError(
-  "The query is destroyed cannot run the query."
+  "The query is destroyed cannot run the query.",
 );
 
 export default class Query extends EventEmitter<QueryEvents> {
@@ -48,7 +53,7 @@ export default class Query extends EventEmitter<QueryEvents> {
   constructor(
     searchQuery: string,
     scrapers?: Scraper[],
-    opts: Partial<QueryOpts> = {}
+    opts: Partial<QueryOpts> = {},
   ) {
     super();
     this.searchQuery = searchQuery;
@@ -95,8 +100,8 @@ export default class Query extends EventEmitter<QueryEvents> {
           new QueryError(
             `error while scraping search page${
               err?.message ? ` : ${err.message}` : ""
-            }`
-          )
+            }`,
+          ),
         );
         return;
       }
@@ -116,8 +121,8 @@ export default class Query extends EventEmitter<QueryEvents> {
               new QueryError(
                 `error while scraping torrent page${
                   err?.message ? ` : ${err.message}` : ""
-                }`
-              )
+                }`,
+              ),
             );
             return;
           }
