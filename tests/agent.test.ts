@@ -33,7 +33,7 @@ describe("TorrentAgent", () => {
     const queries: Query[] = [];
 
     for (let i = 0; i < loopCount; i++) {
-      let q = agent.add({
+      let q = await agent.add({
         searchQuery: "Test",
         scrapers: [testScraper, testScraper1],
       });
@@ -56,9 +56,9 @@ describe("TorrentAgent", () => {
     agent.on("destroyed", () => (isDestroyed = true));
     await agent.destroy();
     expect(isDestroyed).toBe(true);
-    expect(() => {
-      agent.add({ searchQuery: "test", scrapers: [new TestScraper({})] });
-    }).toThrow();
+    expect(async () => {
+      await agent.add({ searchQuery: "test", scrapers: [new TestScraper({})] });
+    }).rejects.toThrow();
   });
   it("should stop all queries when it gets destroyed", async () => {
     let QueriesConcurrency = 5;

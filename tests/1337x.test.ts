@@ -6,8 +6,9 @@ import { TorrentLink } from "../src/scrapers/scraper";
 describe("Test the 1337x scraper", () => {
   beforeEach(() => {
     nock.disableNetConnect();
-    nock("https://1337x.to")
-      .get("/search/ubuntu/1/")
+    nock("https://1337x.pro")
+      .get("/search")
+      .query({ q: "ubuntu", page: "1" })
       .reply(
         200,
         `
@@ -21,7 +22,8 @@ describe("Test the 1337x scraper", () => {
               <td class="coll-2 seeds">81</td>
               <td class="coll-3 leeches">3</td>
               <td class="coll-4 size mob-user">77.0 MB</td>
-              <td class="coll-5 user"><a href="">uploader</a></td>
+              <td class="coll-5">10 days</td>
+              <td class="coll-6 user">uploader</td>
             </tr>
             <tr>
               <td class="name">
@@ -31,14 +33,16 @@ describe("Test the 1337x scraper", () => {
               <td class="coll-2 seeds">70</td>
               <td class="coll-3 leeches">3</td>
               <td class="coll-4 size mob-user">70.0 MB</td>
-              <td class="coll-5 user"><a href="">uploader</a></td>
+              <td class="coll-5">10 days</td>
+              <td class="coll-6 user">uploader</td>
             </tr>
           </tbody>
         </table>
-      `
+      `,
       );
-    nock("https://1337x.to")
-      .get("/search/ubuntu/2/")
+    nock("https://1337x.pro")
+      .get("/search")
+      .query({ q: "ubuntu", page: "2" })
       .reply(
         200,
         `
@@ -47,27 +51,27 @@ describe("Test the 1337x scraper", () => {
            
           </tbody>
         </table>
-      `
+      `,
       );
-    nock("https://1337x.to")
+    nock("https://1337x.pro")
       .get("/torrent/123456/ubuntu-22-04/")
       .reply(
         200,
         `
         <a href="magnet:?xt=urn:btih:abcdef1234567890">Magnet Link</a>
-        <div class="infohash-box"><span>ABCDEF1234567890</span></div>
+        <div class="box-info"><span>Info HAsh   :   ABCDEF1234567890</span></div>
         <a href="/download/123456.torrent">Download Torrent</a>
-      `
+      `,
       );
-    nock("https://1337x.to")
+    nock("https://1337x.pro")
       .get("/torrent/123456/ubuntu-20-04/")
       .reply(
         200,
         `
         <a href="magnet:?xt=urn:btih:abcdef1234567891">Magnet Link</a>
-        <div class="infohash-box"><span>ABCDEF1234567891</span></div>
+        <div class="box-info"><span>inFo HaSH :  ABCDEF1234567891</span></div>
         <a href="/download/123456.torrent">Download Torrent</a>
-      `
+      `,
       );
   });
   afterEach(() => {
@@ -79,7 +83,7 @@ describe("Test the 1337x scraper", () => {
     expect(result).toStrictEqual([
       {
         name: "Ubuntu 22.04",
-        url: "https://1337x.to/torrent/123456/ubuntu-22-04/",
+        url: "https://1337x.pro/torrent/123456/ubuntu-22-04/",
         seeders: 81,
         leechers: 3,
         provider: "1337x",
@@ -87,13 +91,13 @@ describe("Test the 1337x scraper", () => {
         uploader: "uploader",
       },
       {
-        leechers: 3,
         name: "Ubuntu 20.04",
-        provider: "1337x",
+        url: "https://1337x.pro/torrent/123456/ubuntu-20-04/",
         seeders: 70,
+        leechers: 3,
+        provider: "1337x",
         size: "70.0 MB",
         uploader: "uploader",
-        url: "https://1337x.to/torrent/123456/ubuntu-20-04/",
       },
     ] as TorrentLink[]);
   });
@@ -101,7 +105,7 @@ describe("Test the 1337x scraper", () => {
     const scraper = new Scraper1337x();
     let result = await scraper.scrapeTorrent({
       name: "Ubuntu Linux Administration: Essential Commands",
-      url: "https://1337x.to/torrent/123456/ubuntu-22-04/",
+      url: "https://1337x.pro/torrent/123456/ubuntu-22-04/",
       seeders: 29,
       leechers: 3,
       provider: "1337x",
@@ -109,11 +113,9 @@ describe("Test the 1337x scraper", () => {
       uploader: "uploader",
     });
     expect(result).toStrictEqual({
-      magnetURI: "magnet:?xt=urn:btih:abcdef1234567890",
       infoHash: "ABCDEF1234567890",
-      torrentDownload: "/download/123456.torrent",
       name: "Ubuntu Linux Administration: Essential Commands",
-      url: "https://1337x.to/torrent/123456/ubuntu-22-04/",
+      url: "https://1337x.pro/torrent/123456/ubuntu-22-04/",
       seeders: 29,
       leechers: 3,
       provider: "1337x",
@@ -148,7 +150,7 @@ describe("Test the 1337x scraper", () => {
     expect(result).toStrictEqual([
       {
         name: "Ubuntu 22.04",
-        url: "https://1337x.to/torrent/123456/ubuntu-22-04/",
+        url: "https://1337x.pro/torrent/123456/ubuntu-22-04/",
         seeders: 81,
         leechers: 3,
         provider: "1337x",

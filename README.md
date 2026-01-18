@@ -3,7 +3,7 @@
 <h1 align="center">Torrent Agent</h1>
 </div>
 
-Torrent Agent is an npm library for searching torrents from torrent sites like 1337x, YTS, etc. It can run multiple queries concurrently and manage multiple scrapers that looks for torrents from differente providers in the same time.
+Torrent Agent is an npm library for searching torrents from torrent sites like 1337x, Torrent Galaxy, etc. It can run multiple queries concurrently and manage multiple scrapers that looks for torrents from differente providers in the same time.
 
 ## How to use it
 
@@ -20,33 +20,46 @@ import TorrentAgent from "torrent-agent";
 
 const agent = new TorrentAgent();
 
-let query = agent.add({
-  searchQuery: "Ubuntu",
-  options: {
-    limit: 20,
-    concurrency: 5,
-  },
-});
+async function getTorrents() {
+  let query = await agent.add({
+    searchQuery: "Ubuntu",
+    options: {
+      limit: 20,
+      concurrency: 5,
+    },
+  });
 
-// Listen for torrents
-query.on("torrent", (torrent) => {
-  console.log(torrent);
-});
-// Listen for errors
-query.on("error", (e) => {
-  console.log(e);
-});
-// Listen for query completion
-query.on("done", () => {
-  console.log("done");
-});
+  // Listen for torrents
+  query.on("torrent", (torrent) => {
+    console.log(torrent);
+  });
+  // Listen for errors
+  query.on("error", (e) => {
+    console.log(e);
+  });
+  // Listen for query completion
+  query.on("done", () => {
+    console.log("done");
+  });
+}
 ```
 
 #### Default scrapers :
 
 - Torrent Galaxy
+- Nyaa
+- 1337x
 
 > More scrapers will be available soon
+
+#### Default Chromium scrapers :
+
+- The Pirate Bay
+  > **Note:** To use these scrapers, set `allowChromiumScrapers` in the agent config. You must have Chromium installed on your OS. Keep in mind that Chromium uses more memory, which means Chromium scrapers will be heavier than the normal ones and take more time.
+
+```js
+const agent = new TorrentAgent({ allowChromiumScrapers: true });
+```
 
 #### Custom scrapers
 
@@ -69,7 +82,7 @@ class CustomScraper extends Scraper {
 // then create the agent
 const agent = new TorrentAgent();
 // use your custom scraper in your query
-let query = agent.add({
+let query = await agent.add({
   searchQuery: "Ubuntu",
   options: {
     limit: 20,

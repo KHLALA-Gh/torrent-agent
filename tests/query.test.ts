@@ -52,7 +52,7 @@ describe("Test Query", () => {
     // Check the number of expected errors
     // Scraper2 will emit one error because the error is thrown from the firstTouch funcion
     // while Scraper3 will emit n = linksCount2 errors because errors are thrown from the scrape
-    // functions wich are called from a for loop that loop through all links and call scrapTorrent.
+    // functions which are called from a for loop that loop through all links and call scrapTorrent.
     expect(errorCount).toBe(linksCount2 + 1);
   });
   it("should be able to run() multiple times", async () => {
@@ -164,5 +164,28 @@ describe("Test Query", () => {
       new Query("", [new TestScraper({})], { concurrency: 5 });
     };
     expect(fn).toThrow(QueryError);
+  });
+  it("should respect timeout", async () => {
+    const fetchTimeOut = 1000;
+    let q = new Query(
+      "Test",
+      [new TestScraper({ runTime: fetchTimeOut + 1000 })],
+      {
+        fetchTimeOut: fetchTimeOut,
+      },
+    );
+    let t;
+    let timeout = new Promise<never>((res, rej) => {
+      t = setTimeout(() => {
+        rej(new Error("didn't respect the timeout"));
+      }, fetchTimeOut + 200);
+    });
+    let errCount = 0;
+    q.on("error", () => {
+      errCount++;
+    });
+    await Promise.race([q.run(), timeout]);
+
+    expect(errCount).toBe(1);
   });
 });
