@@ -83,7 +83,7 @@ describe("Test the 1337x scraper", () => {
     expect(result).toStrictEqual([
       {
         name: "Ubuntu 22.04",
-        url: "https://1337x.pro/torrent/123456/ubuntu-20-04/",
+        url: "https://1337x.pro/torrent/123456/ubuntu-22-04/",
         seeders: 81,
         leechers: 3,
         provider: "1337x",
@@ -91,11 +91,11 @@ describe("Test the 1337x scraper", () => {
         uploader: "uploader",
       },
       {
-        leechers: 3,
-        url: "https://1337x.pro/torrent/123456/ubuntu-20-04/",
         name: "Ubuntu 20.04",
-        provider: "1337x",
+        url: "https://1337x.pro/torrent/123456/ubuntu-20-04/",
         seeders: 70,
+        leechers: 3,
+        provider: "1337x",
         size: "70.0 MB",
         uploader: "uploader",
       },

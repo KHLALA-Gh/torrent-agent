@@ -4,7 +4,7 @@ import { load } from "cheerio";
 
 export class Scraper1337x extends Scraper {
   static firstTouchUrl = "https://1337x.pro/search";
-  constructor(opts: ScraperOpts = {}) {
+  constructor(opts: ScraperOpts = { name: "1337x Scraper" }) {
     super(opts);
     this.browser = opts.browser;
   }

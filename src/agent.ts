@@ -12,6 +12,10 @@ interface AgentOpts {
    */
   QueriesConcurrency: number;
   allowChromiumScrapers: boolean;
+  /**
+   * Request timeout for fetching web page (ms).
+   */
+  fetchTimeOut: number;
 }
 
 interface AgentEvents {
@@ -34,6 +38,12 @@ export class AgentError extends Error {
     super(msg);
   }
 }
+
+export const defaultQueryConfigs: QueryOpts = {
+  limit: 10,
+  concurrency: 5,
+  fetchTimeOut: 30 * 1000,
+};
 
 export default class TorrentAgent extends EventEmitter<AgentEvents> {
   protected queue: PQueue | null;
@@ -65,15 +75,16 @@ export default class TorrentAgent extends EventEmitter<AgentEvents> {
     if (!this.queue) {
       throw new AgentError("queue is destroyed cannot add a new query");
     }
-    let options: QueryOpts;
-    if (opts.options) options = opts.options;
-    else {
-      options = {
-        limit: 20,
-        concurrency: 5,
-      };
-    }
-    options.useChromiumScrapers = this.opts.allowChromiumScrapers;
+
+    let options: QueryOpts = {
+      ...defaultQueryConfigs,
+      ...opts.options,
+      useChromiumScrapers:
+        opts.options?.useChromiumScrapers === false
+          ? false
+          : this.opts.allowChromiumScrapers,
+    };
+
     if (this.opts.allowChromiumScrapers) {
       if (!this.browser) {
         await new Promise((res, rej) => {

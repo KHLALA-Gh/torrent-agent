@@ -3,6 +3,7 @@ import { Browser } from "playwright";
 export interface ScraperOpts {
   browser?: Browser;
   query?: string;
+  name?: string;
 }
 
 export interface Torrent {
@@ -31,9 +32,9 @@ export interface TorrentLink {
 }
 
 export abstract class Scraper {
-  protected opts: ScraperOpts;
+  opts: ScraperOpts;
   browser?: Browser;
-  constructor(opts: ScraperOpts = {}) {
+  constructor(opts: ScraperOpts = { name: "Not Named" }) {
     this.opts = opts;
   }
   abstract firstTouch(query: string, limit?: number): Promise<TorrentLink[]>;
@@ -55,7 +56,7 @@ export class TestScraper extends Scraper {
   ErrorInFirstTouch?: Error;
   ErrorInScrapeTorrent?: Error;
   constructor(opts: ScraperOpts & Partial<TestScraperOpts>) {
-    super({});
+    super({ name: "Test Scraper" });
     this.linkCount = opts.linksCount || 0;
     this.runTime = opts.runTime || 0;
     this.name = opts.name || "Test Scraper";

@@ -6,6 +6,7 @@ import { Browser } from "playwright";
 import { ThePirateBay } from "./scrapers/thepiratebay.js";
 import { Nyaa } from "./scrapers/nyaa.js";
 import { Scraper1337x } from "./scrapers/1337x.js";
+import { defaultQueryConfigs } from "./agent.js";
 
 export class QueryError extends Error {
   constructor(msg: string) {
@@ -34,6 +35,10 @@ export interface QueryOpts {
   limit: number;
   browser?: Browser;
   useChromiumScrapers?: boolean;
+  /**
+   * Request timeout for fetching web page (ms).
+   */
+  fetchTimeOut: number;
 }
 
 export const QueueDestroyedErr = new QueryError(
@@ -49,6 +54,7 @@ export default class Query extends EventEmitter<QueryEvents> {
   protected searchQuery: string;
   protected queue: PQueue | null;
   protected isDestroyed: boolean;
+  protected opts: QueryOpts;
   limit?: number;
   constructor(
     searchQuery: string,
@@ -57,6 +63,10 @@ export default class Query extends EventEmitter<QueryEvents> {
   ) {
     super();
     this.searchQuery = searchQuery;
+    this.opts = {
+      ...defaultQueryConfigs,
+      ...opts,
+    };
     if (scrapers) {
       scrapers.forEach((s) => {
         s.browser = opts.browser;
@@ -90,45 +100,58 @@ export default class Query extends EventEmitter<QueryEvents> {
       this.emit("error", QueueDestroyedErr);
       throw QueueDestroyedErr;
     }
-    await this.queue.add(async () => {
-      let links: TorrentLink[];
-      try {
-        links = await scraper.firstTouch(this.searchQuery, this.limit);
-      } catch (err: any) {
-        this.emit(
-          "error",
-          new QueryError(
-            `error while scraping search page${
-              err?.message ? ` : ${err.message}` : ""
-            }`,
-          ),
-        );
-        return;
-      }
-      if (!links) return;
-      for (let i = 0; i < links.length; i++) {
-        if (!this.queue) {
-          this.emit("error", QueueDestroyedErr);
-          throw QueueDestroyedErr;
-        }
-        this.queue.add(async () => {
-          try {
-            let torrent = await scraper.scrapeTorrent(links[i]);
-            this.emit("torrent", torrent);
-          } catch (err: any) {
-            this.emit(
-              "error",
-              new QueryError(
-                `error while scraping torrent page${
-                  err?.message ? ` : ${err.message}` : ""
-                }`,
+    try {
+      await this.queue.add(async () => {
+        let t;
+        const timeout = new Promise<never>((_, reject) => {
+          t = setTimeout(() => {
+            reject(
+              new Error(
+                `FirstTouch Timeout (${scraper.opts.name}) : can't load search page (${this.opts.fetchTimeOut}ms)`,
               ),
             );
-            return;
-          }
+          }, this.opts.fetchTimeOut);
         });
-      }
-    });
+        let links: TorrentLink[] = await Promise.race([
+          scraper.firstTouch(this.searchQuery, this.limit),
+          timeout,
+        ]);
+        clearTimeout(t);
+
+        if (!links) return;
+        for (let i = 0; i < links.length; i++) {
+          if (!this.queue) {
+            this.emit("error", QueueDestroyedErr);
+            throw QueueDestroyedErr;
+          }
+          this.queue.add(async () => {
+            try {
+              let torrent = await scraper.scrapeTorrent(links[i]);
+              this.emit("torrent", torrent);
+            } catch (err: any) {
+              this.emit(
+                "error",
+                new QueryError(
+                  `error while scraping torrent page${
+                    err?.message ? ` : ${err.message}` : ""
+                  }`,
+                ),
+              );
+              return;
+            }
+          });
+        }
+      });
+    } catch (err: any) {
+      this.emit(
+        "error",
+        new QueryError(
+          `error while scraping search page${
+            err?.message ? ` : ${err.message}` : ""
+          }`,
+        ),
+      );
+    }
   }
   async run() {
     if (this.isDestroyed) {

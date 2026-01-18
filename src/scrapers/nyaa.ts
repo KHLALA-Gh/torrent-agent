@@ -12,7 +12,7 @@ function extractInfoHash(magnetUri: string) {
 export class Nyaa extends Scraper {
   static homeUrl = "https://nyaa.si";
   static firstTouchUrl = "https://nyaa.si/?q=:query&p=:page";
-  constructor(opts: ScraperOpts = {}) {
+  constructor(opts: ScraperOpts = { name: "Nyaa Scraper" }) {
     super(opts);
   }
   async firstTouch(query: string, limit?: number): Promise<TorrentLink[]> {
@@ -26,12 +26,12 @@ export class Nyaa extends Scraper {
       const { data } = await axios.get(
         Nyaa.firstTouchUrl
           .replace(":query", query || "")
-          .replace(":page", page.toString())
+          .replace(":page", page.toString()),
       );
 
       const $ = load(data);
       let torrentCount = $(
-        ".container .table-responsive table tbody tr"
+        ".container .table-responsive table tbody tr",
       ).length;
       if (torrentCount === 0) {
         break;
@@ -42,7 +42,7 @@ export class Nyaa extends Scraper {
         const name = tds.eq(1).find("a").text().trim();
         const url = new URL(
           tds.eq(1).find("a").attr("href") || "",
-          Nyaa.homeUrl
+          Nyaa.homeUrl,
         );
         const magnetURI = tds.eq(2).find("a").eq(1).attr("href");
         const size = tds.eq(3).text().trim();

@@ -5,7 +5,7 @@ import { load } from "cheerio";
 export class TorrentGalaxy extends Scraper {
   static firstTouchUrl =
     "https://torrentgalaxy.hair/lmsearch?q=:query&category=lmsearch&page=:page";
-  constructor(opts: ScraperOpts = {}) {
+  constructor(opts: ScraperOpts = { name: "TorrentGalaxy" }) {
     super(opts);
   }
   async firstTouch(query: string, limit?: number): Promise<TorrentLink[]> {
@@ -19,7 +19,7 @@ export class TorrentGalaxy extends Scraper {
       const { data } = await axios.get(
         TorrentGalaxy.firstTouchUrl
           .replace(":query", query || "")
-          .replace(":page", page.toString())
+          .replace(":page", page.toString()),
       );
 
       const $ = load(data);

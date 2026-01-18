@@ -165,4 +165,27 @@ describe("Test Query", () => {
     };
     expect(fn).toThrow(QueryError);
   });
+  it("should respect timeout", async () => {
+    const fetchTimeOut = 1000;
+    let q = new Query(
+      "Test",
+      [new TestScraper({ runTime: fetchTimeOut + 1000 })],
+      {
+        fetchTimeOut: fetchTimeOut,
+      },
+    );
+    let t;
+    let timeout = new Promise<never>((res, rej) => {
+      t = setTimeout(() => {
+        rej(new Error("didn't respect the timeout"));
+      }, fetchTimeOut + 200);
+    });
+    let errCount = 0;
+    q.on("error", () => {
+      errCount++;
+    });
+    await Promise.race([q.run(), timeout]);
+
+    expect(errCount).toBe(1);
+  });
 });

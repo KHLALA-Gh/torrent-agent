@@ -13,7 +13,7 @@ export class ThePirateBay extends Scraper {
   static homeUrl = "https://thepiratebay.org";
   static firstTouchUrl = "https://thepiratebay.org/search.php?q=:query";
   browser?: Browser;
-  constructor(opts: ScraperOpts = {}) {
+  constructor(opts: ScraperOpts = { name: "ThePirateBay Scraper" }) {
     super(opts);
     if (opts.browser) {
       this.browser = this.browser;
@@ -35,7 +35,7 @@ export class ThePirateBay extends Scraper {
           .replace(":page", page.toString()),
         {
           waitUntil: "networkidle",
-        }
+        },
       );
 
       const data = await page.content();
@@ -52,7 +52,7 @@ export class ThePirateBay extends Scraper {
         const name = span.eq(1).find("a").text().trim();
         const url = new URL(
           span.eq(1).find("a").attr("href") || "",
-          ThePirateBay.homeUrl
+          ThePirateBay.homeUrl,
         );
         const magnetURI = span.eq(3).find("a").eq(0).attr("href");
         const size = span.eq(4).text().trim();
