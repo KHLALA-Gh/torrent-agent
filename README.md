@@ -3,7 +3,7 @@
 <h1 align="center">Torrent Agent</h1>
 </div>
 
-Torrent Agent is an npm library for searching torrents from torrent sites like 1337x, YTS, etc. It can run multiple queries concurrently and manage multiple scrapers that looks for torrents from differente providers in the same time.
+Torrent Agent is an npm library for searching torrents from torrent sites like 1337x, Torrent Galaxy, etc. It can run multiple queries concurrently and manage multiple scrapers that looks for torrents from differente providers in the same time.
 
 ## How to use it
 
@@ -48,6 +48,7 @@ async function getTorrents() {
 
 - Torrent Galaxy
 - Nyaa
+- 1337x
 
 > More scrapers will be available soon
 
@@ -81,7 +82,7 @@ class CustomScraper extends Scraper {
 // then create the agent
 const agent = new TorrentAgent();
 // use your custom scraper in your query
-let query = agent.add({
+let query = await agent.add({
   searchQuery: "Ubuntu",
   options: {
     limit: 20,
